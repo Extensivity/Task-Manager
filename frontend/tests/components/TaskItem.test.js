@@ -1,27 +1,12 @@
 import { fireEvent, render } from '@testing-library/react';
-import { faker } from '@faker-js/faker';
 import TaskItem from '@/components/TaskItem';
-import '@testing-library/jest-dom'
+import { createRandomTask } from './task.helper';
+import '@testing-library/jest-dom';
 
 
 function getPriorityValue(prio) {
-    const priority = { Low: 0, Medium: 1, High: 2 }
-    return priority[prio]
-}
-
-
-function createRandomTask() {
-    return {
-        id: faker.number.int(),
-        title: faker.lorem.word(),
-        description: faker.lorem.sentence(),
-        completed: faker.datatype.boolean(),
-        priority: faker.helpers.arrayElement([0, 1, 2]),
-        dueDate: faker.date.between({
-            from: faker.date.recent({ days: 10 }),
-            to: faker.date.soon({ days: 10 })
-        })    
-    }
+    const priority = { Low: 0, Medium: 1, High: 2 };
+    return priority[prio];
 }
 
 describe('TaskItem Component', () => {
@@ -48,7 +33,7 @@ describe('TaskItem Component', () => {
         const { getByTestId } = render(<TaskItem task={task} actions={actions} />);
         if (completed) { expect(getByTestId('TestItem-checkbox')).toBeChecked(); }
         else { expect(getByTestId('TestItem-checkbox')).not.toBeChecked(); }
-    })
+    });
     
     it.each(["Low", "Medium", "High"])('displays the correct priority (%s)', (priority) => {
         task.priority = getPriorityValue(priority);
@@ -74,7 +59,6 @@ describe('TaskItem Component', () => {
             fireEvent.click(getByTestId('TestItem-delete'));
             expect(actions.toggleCompleted).toHaveBeenCalledWith(task.id);
         });
-    })
-    
+    }); 
 });
 
