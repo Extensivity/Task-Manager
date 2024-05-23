@@ -1,9 +1,8 @@
+import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import TaskList from '@/components/TaskList';
 import TaskItem from '@/components/TaskItem';
 import { createRandomTaskList } from './task.helper';
-import '@testing-library/jest-dom';
-
 
 jest.mock('../../src/components/TaskItem', () => jest.fn(({ task, actions }) => (
     <tr data-task-id={task.id}>
@@ -19,6 +18,18 @@ const mockActions = {
     editTask: jest.fn()
 };
 
+function renderWrapper(child) {
+    const TaskListWrapper = ({children}) => (
+        <table>{children}</table>
+    );
+
+    return render(
+        <TaskListWrapper>
+            {child}
+        </TaskListWrapper>
+    );
+}
+
 
 describe('TaskList Component', () => {
     let tasks;
@@ -28,14 +39,16 @@ describe('TaskList Component', () => {
     });
 
     it('renders each task', () => {
-        render(<TaskList tasks={tasks} actions={mockActions} />);
+        renderWrapper(<TaskList tasks={tasks} actions={mockActions} />);
         expect(TaskItem).toHaveBeenCalledTimes(tasks.length);
-        tasks.forEach(task => {expect(TaskItem).toHaveBeenCalledWith({task, actions: mockActions}, {})});
+        tasks.forEach(task => {
+            expect(TaskItem).toHaveBeenCalledWith({task, actions: mockActions}, {})
+        });
     });
 
     it('does not crash on an empty list', () => {
         const tasks = [];
-        const {getByText} = render(<TaskList tasks={tasks} actions={mockActions} />);
+        const {getByText} = renderWrapper(<TaskList tasks={tasks} actions={mockActions} />);
         expect(getByText('No tasks available')).toBeInTheDocument();
     });
 });

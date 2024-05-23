@@ -1,5 +1,10 @@
 import { faker } from '@faker-js/faker';
 
+export function getPriorityValue(prio) {
+    const priority = { Low: 0, Medium: 1, High: 2 };
+    return priority[prio];
+}
+
 export function createRandomTask() {
     return {
         id: faker.number.int(),
