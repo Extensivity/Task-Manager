@@ -5,21 +5,22 @@ export function getPriorityValue(prio) {
     return priority[prio];
 }
 
-export function createRandomTask() {
+export function createRandomTask(futureOnly=true) {
+    const r = { days: 10 };
+    const soon = faker.date.soon(r);
+    const dueDate = futureOnly ? soon : faker.date.between({ from: faker.date.recent(r), to: soon })
+    
     return {
         id: faker.number.int(),
         title: faker.lorem.word(),
         description: faker.lorem.sentence(),
         completed: faker.datatype.boolean(),
         priority: faker.helpers.arrayElement([0, 1, 2]),
-        dueDate: faker.date.between({
-            from: faker.date.recent({ days: 10 }),
-            to: faker.date.soon({ days: 10 })
-        })
+        dueDate: dueDate
     };
 }
 
-export function createRandomTaskList() {
-    const length = faker.number.int(10, 50);
-    return Array.from({ length }, createRandomTask);
+export function createRandomTaskList(min=10, max=50) {
+    const length = faker.number.int(min, max);
+    return Array.from({ length }, () => createRandomTask(false));
 }

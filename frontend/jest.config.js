@@ -7,7 +7,7 @@ const createJestConfig = nextJest({
  
 const config = {
   collectCoverage: true,
-  coverageDirectory: "coverage",
+  coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   testEnvironment: 'jsdom',
 }
