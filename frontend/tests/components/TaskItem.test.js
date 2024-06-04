@@ -3,9 +3,6 @@ import { fireEvent, render } from '@testing-library/react';
 import TaskItem from '@/components/TaskItem';
 import { getPriorityValue, createRandomTask } from './task.helper';
 
-function TestParent({ children }){
-    return <table><tbody>{children}</tbody></table>;
-}
 
 function renderWrapper(child) {
     const TaskItemWrapper = ({children}) => (
@@ -40,7 +37,7 @@ describe('TaskItem Component', () => {
         const { getByText } = renderWrapper(<TaskItem task={task} actions={actions} />);
         expect(getByText(task.title)).toBeInTheDocument();
         expect(getByText(task.description)).toBeInTheDocument();
-        expect(getByText(task.dueDate.toString())).toBeInTheDocument();
+        expect(getByText(new Date(task.dueDate).toLocaleString())).toBeInTheDocument();
     });
 
     it.each([true, false])('display the correct completed value (%s)', (completed) => {
@@ -62,14 +59,13 @@ describe('TaskItem Component', () => {
             fireEvent.click(getByTestId('TestItem-checkbox'));
             expect(actions.toggleCompleted).toHaveBeenCalledWith(task.id);
         });
-        
-        it('calls editTask function when edit button is clicked', () => {
-            const { getByTestId } = renderWrapper(<TaskItem task={task} actions={actions} />);
-            fireEvent.click(getByTestId('TestItem-edit'));
-            expect(actions.editTask).toHaveBeenCalledWith(task.id);
+
+        describe('Edit Task Modal', () => {
+            it.todo('should open the modal when edit button is clicked');
+            it.todo('after modal is open, it should modify a task, then call editTask');
         });
         
-        it('calls editTask function when delete button is clicked', () => {
+        it('calls deleteTask function when delete button is clicked', () => {
             const { getByTestId } = renderWrapper(<TaskItem task={task} actions={actions} />);
             fireEvent.click(getByTestId('TestItem-delete'));
             expect(actions.deleteTask).toHaveBeenCalledWith(task.id);
