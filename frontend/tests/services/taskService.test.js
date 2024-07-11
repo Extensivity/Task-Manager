@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom';
 import { createRandomTask, createRandomTaskList } from '../components/task.helper';
 import { createTask, deleteTask, getTaskById, getTasks, updateTask } from '@/services/taskService';
 import { faker } from '@faker-js/faker';

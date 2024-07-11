@@ -24,3 +24,10 @@ export function createRandomTaskList(min=10, max=50) {
     const length = faker.number.int(min, max);
     return Array.from({ length }, () => createRandomTask(false));
 }
+
+export function createRandomCredentials() {
+    return {
+        email: faker.internet.email(),
+        password: faker.internet.password()
+    };
+}
