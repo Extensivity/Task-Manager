@@ -1,23 +1,14 @@
 export default function TaskItem({ task, actions }) {
     const priority = ["Low", "Medium", "High"][task.priority];
-    const methods = {
-        toggleCompleted: (e) => actions.toggleCompleted(task.id),
-        editTask: (e) => {
-            actions.editTask(task.id, {
-                title: 'Updated Task 1'
-            })
-        },
-        deleteTask: (e) => actions.deleteTask(task.id),
-    };
 
     return (
-        <tr data-testid="TestItem" className="TaskItem">
+        <tr data-testid="TaskItem" className="TaskItem">
             <td className="TaskItem-checkbox">
                 <input
-                    data-testid="TestItem-checkbox"
+                    data-testid="TaskItem-checkbox"
                     type="checkbox"
                     checked={task.completed}
-                    onChange={methods.toggleCompleted}
+                    onChange={() => actions.toggleComplete(task.id)}
                 />
             </td>
             <td data-testid="TaskItem-title" className="TaskItem-title">{task.title}</td>
@@ -25,8 +16,8 @@ export default function TaskItem({ task, actions }) {
             <td data-testid="TaskItem-due date" className="TaskItem-duedate">{new Date(task.dueDate).toLocaleString()}</td>
             <td data-testid="TaskItem-priority" className="TaskItem-priority">{priority}</td>
             <td data-testid="TaskItem-actions" className="TaskItem-actions">
-                <button data-testid="TestItem-edit" className="TaskItem-button" onClick={ methods.editTask }>Edit</button>
-                <button data-testid="TestItem-delete" className="TaskItem-button" onClick={ methods.deleteTask }>Delete</button>
+                <button data-testid="TaskItem-edit" className="TaskItem-button" onClick={() => actions.editTask(task.id)}>Edit</button>
+                <button data-testid="TaskItem-delete" className="TaskItem-button" onClick={() => actions.deleteTask(task.id)}>Delete</button>
             </td>
         </tr>
     );

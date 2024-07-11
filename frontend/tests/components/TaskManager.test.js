@@ -16,7 +16,7 @@ describe('TaskManager Component', () => {
         { id: 4, title: 'Task 1', completed: true, description: 'Task D', dueDate: dateTime + 2, priority: 0 },
         { id: 5, title: 'Task 2', completed: false, description: 'Task E', dueDate: dateTime + 1, priority: 1 },
         { id: 6, title: 'Task 3', completed: true, description: 'Task F', dueDate: dateTime + 0, priority: 2 },
-    ];
+    ];4
     
     beforeEach(() => {
         jest.clearAllMocks();
@@ -35,10 +35,15 @@ describe('TaskManager Component', () => {
         testTasks.forEach(task => expect(screen.getByText(task.title)).toBeInTheDocument());
     });
 
-    it.skip('should open a modal when "Add Task" button is clicked', async () => {
+    it('should open a modal when "Add Task" button is clicked', async () => {
         await waitFor(() => expect(screen.getByText('Add Task')).toBeInTheDocument());
         fireEvent.click(screen.getByText('Add Task'));
-        // expect(screen.getBy ??? ).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByLabelText('Title:')).toBeInTheDocument();
+        expect(screen.getByLabelText('Description:')).toBeInTheDocument();
+        expect(screen.getByLabelText('Due Date:')).toBeInTheDocument();
+        expect(screen.getByLabelText('Priority:')).toBeInTheDocument();
+        expect(screen.getByText('Add')).toBeInTheDocument();
     });
 
     describe.each(['Completed'])('Filtering %s', (filter) => {
@@ -156,11 +161,7 @@ describe('TaskManager Actions', () => {
         getTasks.mockResolvedValue(testTasks);
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
-
-    test('toggleCompleted action', async () => {
+    it('toggleCompleted action', async () => {
         render(<TaskManager />);
 
         await waitFor(() => expect(screen.getByText('Task 1')).toBeInTheDocument());
@@ -171,36 +172,39 @@ describe('TaskManager Actions', () => {
             testTasks[1]
         ]);
 
-        const checkbox = screen.getAllByRole('checkbox')[0];
+        // Simulate the user clicking the checkbox to complete the task
+        const checkbox = screen.getAllByTestId('TaskItem-checkbox')[0];
         fireEvent.click(checkbox);
 
+        // Verify that the updateTask and getTasks functions are called as expected
         await waitFor(() => {
             expect(updateTask).toHaveBeenCalledWith(1, expect.objectContaining({ completed: true }));
             expect(getTasks).toHaveBeenCalledTimes(2);
         });
     });
 
-    it.skip('This test needs to change, due to it being too coupled', async () => {
+
+    it('editTask action | open modal to edit task', async () => {
+        // editTask action doesn't actually call the api to edit a task
+        // it should only open the modal, to allow editing of the task
         render(<TaskManager />);
 
         await waitFor(() => expect(screen.getByText('Task 1')).toBeInTheDocument());
 
-        updateTask.mockResolvedValueOnce({});
-        getTasks.mockResolvedValueOnce([
-            { ...testTasks[0], title: 'Updated Task 1' },
-            testTasks[1]
-        ]);
-
-        const editButton = screen.getAllByText('Edit')[0];
+        const editButton = screen.getAllByTestId('TaskItem-edit')[0];
         fireEvent.click(editButton);
 
         await waitFor(() => {
-            expect(updateTask).toHaveBeenCalledWith(1, expect.objectContaining({ title: 'Updated Task 1' }));
-            expect(getTasks).toHaveBeenCalledTimes(2);
+            expect(screen.getByRole('dialog')).toBeInTheDocument();
+            expect(screen.getByLabelText('Title:')).toBeInTheDocument();
+            expect(screen.getByLabelText('Description:')).toBeInTheDocument();
+            expect(screen.getByLabelText('Due Date:')).toBeInTheDocument();
+            expect(screen.getByLabelText('Priority:')).toBeInTheDocument();
         });
+
     });
 
-    test('deleteTask action', async () => {
+    it('deleteTask action', async () => {
         render(<TaskManager />);
 
         await waitFor(() => expect(screen.getByText('Task 1')).toBeInTheDocument());
@@ -208,7 +212,7 @@ describe('TaskManager Actions', () => {
         deleteTask.mockResolvedValueOnce({});
         getTasks.mockResolvedValueOnce([testTasks[1]]);
 
-        const deleteButton = screen.getAllByText('Delete')[0];
+        const deleteButton = screen.getAllByTestId('TaskItem-delete')[0];
         fireEvent.click(deleteButton);
 
         await waitFor(() => {

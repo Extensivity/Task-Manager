@@ -27,7 +27,7 @@ describe('TaskItem Component', () => {
     beforeEach(() => {
         task = createRandomTask();
         actions = {
-            toggleCompleted: jest.fn(),
+            toggleComplete: jest.fn(),
             editTask: jest.fn(),
             deleteTask: jest.fn()
         }
@@ -43,8 +43,9 @@ describe('TaskItem Component', () => {
     it.each([true, false])('display the correct completed value (%s)', (completed) => {
         task.completed = completed;
         const { getByTestId } = renderWrapper(<TaskItem task={task} actions={actions} />);
-        if (completed) { expect(getByTestId('TestItem-checkbox')).toBeChecked(); }
-        else { expect(getByTestId('TestItem-checkbox')).not.toBeChecked(); }
+        const element = getByTestId('TaskItem-checkbox')
+        if (completed) expect(element).toBeChecked();
+        else expect(element).not.toBeChecked();
     });
     
     it.each(["Low", "Medium", "High"])('displays the correct priority (%s)', (priority) => {
@@ -54,20 +55,21 @@ describe('TaskItem Component', () => {
     });
 
     describe('calls the additional actions', () => {
-        it('calls toggleCompleted function when checkbox is clicked', () => {
+        it('calls toggleComplete function when checkbox is clicked', () => {
             const { getByTestId } = renderWrapper(<TaskItem task={task} actions={actions} />);
-            fireEvent.click(getByTestId('TestItem-checkbox'));
-            expect(actions.toggleCompleted).toHaveBeenCalledWith(task.id);
+            fireEvent.click(getByTestId('TaskItem-checkbox'));
+            expect(actions.toggleComplete).toHaveBeenCalledWith(task.id);
         });
 
-        describe('Edit Task Modal', () => {
-            it.todo('should open the modal when edit button is clicked');
-            it.todo('after modal is open, it should modify a task, then call editTask');
+        it('calls editTask function when edit button is clicked', () => {
+            const { getByTestId } = renderWrapper(<TaskItem task={task} actions={actions} />);
+            fireEvent.click(getByTestId('TaskItem-edit'));
+            expect(actions.editTask).toHaveBeenCalledWith(task.id);
         });
         
         it('calls deleteTask function when delete button is clicked', () => {
             const { getByTestId } = renderWrapper(<TaskItem task={task} actions={actions} />);
-            fireEvent.click(getByTestId('TestItem-delete'));
+            fireEvent.click(getByTestId('TaskItem-delete'));
             expect(actions.deleteTask).toHaveBeenCalledWith(task.id);
         });
     }); 

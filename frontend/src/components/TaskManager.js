@@ -1,6 +1,8 @@
 import TaskList from '@/components/TaskList';
-import { deleteTask, getTasks, updateTask } from '@/services/taskService';
+import TaskModal from '@/components/TaskModal';
 import { useEffect, useState, useCallback } from 'react';
+import { createTask, deleteTask, getTasks, updateTask } from '@/services/taskService';
+
 
 export default function TaskManager() {
     const [tasks, setTasks] = useState([]);
@@ -8,6 +10,8 @@ export default function TaskManager() {
     const [loading, setLoading] = useState(true);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'default' });
     const [filterConfig, setFilterConfig] = useState({ completed: 'all' });
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [taskToEdit, setTaskToEdit] = useState(null);
 
     const fetchTasks = useCallback(async () => {
         setLoading(true);
@@ -41,20 +45,37 @@ export default function TaskManager() {
     }, [tasks, filterConfig, sortConfig]);
 
     const actions = {
-        toggleCompleted: async (taskId) => {
-            const task = tasks.find((task) => task.id === taskId);
-            const completed = !task.completed;
-            await updateTask(taskId, { ...task, completed });
-            await fetchTasks();
+        toggleComplete: async (taskId) => {
+            let task = tasks.find((task) => task.id == taskId);
+            await updateTask(task.id, { ...task, completed: !task.completed });
+            fetchTasks();
         },
-        editTask: async (taskId, update) => {
-            await updateTask(taskId, update);
-            await fetchTasks();
+        editTask: (taskId) => {
+            let task = tasks.find((task) => task.id == taskId);
+            setTaskToEdit(task);
+            setIsModalOpen(true);
         },
         deleteTask: async (taskId) => {
             await deleteTask(taskId);
-            await fetchTasks();
+            fetchTasks();
         }
+    };
+
+    const handleAddTask = () => {
+        setTaskToEdit(null);
+        setIsModalOpen(true);
+    };
+
+    const handleSaveTask = async (task) => {
+        if (taskToEdit) await updateTask(taskToEdit.id, task);
+        else await createTask(task);
+        fetchTasks();
+        handleCloseModal();
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setTaskToEdit(null);
     };
 
     const sortTasks = (key) => () => {
@@ -91,7 +112,7 @@ export default function TaskManager() {
         <div className='TaskManager'>
             <div className="TaskManager-header">
                 <h1 className='TaskManager-title'>Task List</h1>
-                <button className='TaskManager-add TaskManager-btn'>Add Task</button>
+                <button className='TaskManager-add TaskManager-btn' onClick={handleAddTask}>Add Task</button>
             </div>
             <table className='TaskManager-table'>
                 <thead className='TaskManager-table-header'>
@@ -106,6 +127,7 @@ export default function TaskManager() {
                 </thead>
                 <TaskList tasks={filteredTasks} actions={actions} />
             </table>
+            <TaskModal task={taskToEdit} isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveTask} />
         </div>
     );
 }
