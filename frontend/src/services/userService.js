@@ -31,8 +31,17 @@ export const register = async (userData) => {
     return await response.json();
 };
 
+export const fetchUser = async (token) => {
+    const payload = { headers: { 'Authorization': `Bearer ${token}` } };
+    const response = await fetch(`${API_URL}/user`, payload);
+    console.log('Response ok:', response.ok);
+    if (!response.ok) { throw new Error('Failed to fetch user'); }
+    return await response.json()
+}
+
 export default {
     login,
     logout,
-    register
+    register,
+    fetchUser
 };

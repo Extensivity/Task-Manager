@@ -22,11 +22,17 @@ describe('User Service', () => {
     afterAll(() => {
         fetchSpy.mockRestore();
     });
-    
+
     it('should handle login', async () => {
-        // UUID should be good enough for the token
-        const token = faker.string.uuid();
         const credentials = createRandomCredentials();
+        const mockResponse = {
+            token: faker.string.uuid(),
+            user: {
+                id: faker.number.int({ min: 1 }),
+                username: faker.internet.userName()
+            }
+        };
+
         const expectingPayload = {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -35,21 +41,34 @@ describe('User Service', () => {
         };
 
         fetchSpy.mockResolvedValueOnce({
-            ok: true, json: async () => token
+            ok: true, json: async () => mockResponse
         });
 
         const result = await userService.login(credentials);
-        expect(result).toEqual(token);
+        expect(result).toEqual(mockResponse);
         expect(fetchSpy).toHaveBeenCalledWith(
             expect.any(String),
             expect.objectContaining(expectingPayload)
         );
     });
 
-    it('should handle a registration', async () => {
-        // UUID should be good enough for the token
-        const token = faker.string.uuid();
+    it('should throw an error if login fails', async () => {
         const credentials = createRandomCredentials();
+        fetchSpy.mockResolvedValueOnce({ ok: false });
+        await expect(userService.login(credentials))
+            .rejects.toThrow(/login failed/i);
+    });
+
+    it('should handle a registration', async () => {
+        const credentials = createRandomCredentials();
+        const mockResponse = {
+            token: faker.string.uuid(),
+            user: {
+                id: faker.number.int({ min: 1 }),
+                username: faker.internet.userName()
+            }
+        };
+
         const expectingPayload = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -58,15 +77,22 @@ describe('User Service', () => {
         };
 
         fetchSpy.mockResolvedValueOnce({
-            ok: true, json: async () => token
+            ok: true, json: async () => mockResponse
         });
 
         const result = await userService.register(credentials);
-        expect(result).toEqual(token);
+        expect(result).toEqual(mockResponse);
         expect(fetchSpy).toHaveBeenCalledWith(
             expect.any(String),
             expect.objectContaining(expectingPayload)
         );
+    });
+
+    it('should throw an error if registration fails', async () => {
+        const credentials = createRandomCredentials();
+        fetchSpy.mockResolvedValueOnce({ ok: false });
+        await expect(userService.register(credentials))
+            .rejects.toThrow(/registration failed/i);
     });
 
     it('should handle a logout', async () => {
@@ -77,4 +103,40 @@ describe('User Service', () => {
             expect.objectContaining(expectingPayload)
         );
     });
+
+    it('should throw an error if logout fails', async () => {
+        fetchSpy.mockResolvedValueOnce({ ok: false });
+        await expect(userService.logout())
+            .rejects.toThrow(/logout failed/i);
+    });
+
+    it('should handle fetching a user', async () => {
+        const token = faker.string.uuid();
+        const mockResponse = { user: {
+            id: faker.number.int({ min: 1 }),
+            username: faker.internet.userName()
+        }};
+        const expectingPayload = {
+            headers: { 'Authorization': `Bearer ${token}` }
+        };
+
+        fetchSpy.mockResolvedValueOnce({
+            ok: true, json: async () => mockResponse
+        });
+
+        const result = await userService.fetchUser(token);
+        expect(result).toEqual(mockResponse);
+        expect(fetchSpy).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.objectContaining(expectingPayload)
+        );
+    });
+
+    it('should throw an error if fetching user fails', async () => {
+        const token = faker.string.uuid();
+        fetchSpy.mockResolvedValueOnce({ ok: false });
+        await expect(userService.fetchUser(token))
+            .rejects.toThrow(/failed to fetch user/i);
+    });
 });
+
