@@ -1,7 +1,7 @@
 import TaskList from '@/components/TaskList';
 import TaskModal from '@/components/TaskModal';
 import { useEffect, useState, useCallback } from 'react';
-import { createTask, deleteTask, getTasks, updateTask } from '@/services/taskService';
+import taskService from '@/services/taskService';
 
 
 export default function TaskManager() {
@@ -15,7 +15,7 @@ export default function TaskManager() {
 
     const fetchTasks = useCallback(async () => {
         setLoading(true);
-        const fetchedTasks = await getTasks();
+        const fetchedTasks = await taskService.getTasks();
         setTasks(fetchedTasks);
         setLoading(false);
     }, []);
@@ -47,7 +47,7 @@ export default function TaskManager() {
     const actions = {
         toggleComplete: async (taskId) => {
             let task = tasks.find((task) => task.id == taskId);
-            await updateTask(task.id, { ...task, completed: !task.completed });
+            await taskService.updateTask(task.id, { ...task, completed: !task.completed });
             fetchTasks();
         },
         editTask: (taskId) => {
@@ -56,7 +56,7 @@ export default function TaskManager() {
             setIsModalOpen(true);
         },
         deleteTask: async (taskId) => {
-            await deleteTask(taskId);
+            await taskService.deleteTask(taskId);
             fetchTasks();
         }
     };

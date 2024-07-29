@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import TaskManager from '@/components/TaskManager';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { getTasks, updateTask, deleteTask } from '@/services/taskService';
+import taskService from '@/services/taskService';
 
 
 jest.mock('../../src/services/taskService');
@@ -17,10 +17,10 @@ describe('TaskManager Component', () => {
         { id: 5, title: 'Task 2', completed: false, description: 'Task E', dueDate: dateTime + 1, priority: 1 },
         { id: 6, title: 'Task 3', completed: true, description: 'Task F', dueDate: dateTime + 0, priority: 2 },
     ];4
-    
+
     beforeEach(() => {
         jest.clearAllMocks();
-        getTasks.mockResolvedValue(testTasks);
+        taskService.getTasks.mockResolvedValue(testTasks);
         act(() => render(<TaskManager />));
     });
 
@@ -158,7 +158,7 @@ describe('TaskManager Actions', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        getTasks.mockResolvedValue(testTasks);
+        taskService.getTasks.mockResolvedValue(testTasks);
     });
 
     it('toggleCompleted action', async () => {
@@ -166,8 +166,8 @@ describe('TaskManager Actions', () => {
 
         await waitFor(() => expect(screen.getByText('Task 1')).toBeInTheDocument());
 
-        updateTask.mockResolvedValueOnce({});
-        getTasks.mockResolvedValueOnce([
+        taskService.updateTask.mockResolvedValueOnce({});
+        taskService.getTasks.mockResolvedValueOnce([
             { ...testTasks[0], completed: true },
             testTasks[1]
         ]);
@@ -178,8 +178,8 @@ describe('TaskManager Actions', () => {
 
         // Verify that the updateTask and getTasks functions are called as expected
         await waitFor(() => {
-            expect(updateTask).toHaveBeenCalledWith(1, expect.objectContaining({ completed: true }));
-            expect(getTasks).toHaveBeenCalledTimes(2);
+            expect(taskService.updateTask).toHaveBeenCalledWith(1, expect.objectContaining({ completed: true }));
+            expect(taskService.getTasks).toHaveBeenCalledTimes(2);
         });
     });
 
@@ -209,15 +209,15 @@ describe('TaskManager Actions', () => {
 
         await waitFor(() => expect(screen.getByText('Task 1')).toBeInTheDocument());
 
-        deleteTask.mockResolvedValueOnce({});
-        getTasks.mockResolvedValueOnce([testTasks[1]]);
+        taskService.deleteTask.mockResolvedValueOnce({});
+        taskService.getTasks.mockResolvedValueOnce([testTasks[1]]);
 
         const deleteButton = screen.getAllByTestId('TaskItem-delete')[0];
         fireEvent.click(deleteButton);
 
         await waitFor(() => {
-            expect(deleteTask).toHaveBeenCalledWith(1);
-            expect(getTasks).toHaveBeenCalledTimes(2);
+            expect(taskService.deleteTask).toHaveBeenCalledWith(1);
+            expect(taskService.getTasks).toHaveBeenCalledTimes(2);
         });
     });
 });

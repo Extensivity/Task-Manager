@@ -37,11 +37,13 @@ export const fetchUser = async (token) => {
     console.log('Response ok:', response.ok);
     if (!response.ok) { throw new Error('Failed to fetch user'); }
     return await response.json()
-}
+};
 
-export default userService = {
+const userService = {
     login,
     logout,
     register,
     fetchUser
 };
+
+export default userService;

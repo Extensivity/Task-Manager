@@ -1,5 +1,5 @@
 import { createRandomTask, createRandomTaskList } from '../components/task.helper';
-import { createTask, deleteTask, getTaskById, getTasks, updateTask } from '@/services/taskService';
+import taskService from '@/services/taskService';
 import { faker } from '@faker-js/faker';
 
 global.fetch = jest.fn();
@@ -38,14 +38,14 @@ describe('Task Service', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newTask)
             }
-            
+
             fetchSpy.mockResolvedValueOnce({
                 ok: true,
                 json: async () => newTask
             });
-            
-            const result = await createTask(newTask);
-            
+
+            const result = await taskService.createTask(newTask);
+
             expect(result).toEqual(newTask);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -67,8 +67,8 @@ describe('Task Service', () => {
                 ok: false, status: 400,
                 json: async () => ({ error: resolveErrorMessage })
             });
-            
-            await expect(createTask(newTask)).rejects.toThrow('Failed to create task');
+
+            await expect(taskService.createTask(newTask)).rejects.toThrow('Failed to create task');
             expect(errorSpy).toHaveBeenCalledTimes(1);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -83,13 +83,13 @@ describe('Task Service', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newTask)
             }
-            
+
             fetchSpy.mockResolvedValueOnce({
                 ok: false, status: 400,
                 json: async () => ({ error: 'Due date cannot be in the past' })
             });
 
-            await expect(createTask(newTask)).rejects.toThrow('Failed to create task');
+            await expect(taskService.createTask(newTask)).rejects.toThrow('Failed to create task');
             expect(errorSpy).toHaveBeenCalledTimes(1);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -104,13 +104,13 @@ describe('Task Service', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newTask)
             }
-            
+
             fetchSpy.mockResolvedValueOnce({
                 ok: false, status: 400,
                 json: async () => ({ error: 'Priority must be a positive number' })
             });
-    
-            await expect(createTask(newTask)).rejects.toThrow('Failed to create task');
+
+            await expect(taskService.createTask(newTask)).rejects.toThrow('Failed to create task');
             expect(errorSpy).toHaveBeenCalledTimes(1);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -118,7 +118,7 @@ describe('Task Service', () => {
             );
         });
     });
-    
+
     describe("Read all tasks", () => {
         const payload = { method: 'GET', headers: { 'Content-Type': 'application/json' }};
 
@@ -128,19 +128,19 @@ describe('Task Service', () => {
                 json: async () => ({ error: 'Internal Server Error' })
             });
 
-            await expect(getTasks()).rejects.toThrow('Failed to fetch tasks');
+            await expect(taskService.getTasks()).rejects.toThrow('Failed to fetch tasks');
             expect(errorSpy).toHaveBeenCalledTimes(1);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
                 expect.objectContaining(payload)
             );
         })
-        
+
         it('should handle an empty task list', async () => {
             fetchSpy.mockResolvedValueOnce({ ok: true, json: async () => []});
-            
-            const result = await getTasks();
-            
+
+            const result = await taskService.getTasks();
+
             expect(result).toEqual([]);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -150,9 +150,9 @@ describe('Task Service', () => {
         it('should fetch a list of tasks from the backend endpoint', async () => {
             const tasks = createRandomTaskList();
             fetchSpy.mockResolvedValueOnce({ ok: true, json: async () => tasks});
-            
-            const result = await getTasks();
-            
+
+            const result = await taskService.getTasks();
+
             expect(result).toEqual(tasks);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -164,9 +164,9 @@ describe('Task Service', () => {
             task.description = 'Description with special characters: !@#$%^&*() and Unicode: 漢字';
             const tasks = [task];
             fetchSpy.mockResolvedValueOnce({ ok: true, json: async () => tasks});
-            
-            const result = await getTasks();
-            
+
+            const result = await taskService.getTasks();
+
             expect(result).toEqual(tasks);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -179,7 +179,7 @@ describe('Task Service', () => {
             tasks[1].dueDate = faker.date.future();
             fetchSpy.mockResolvedValueOnce({ ok: true, json: async () => tasks });
 
-            const result = await getTasks();
+            const result = await taskService.getTasks();
 
             expect(result).toEqual(tasks);
             expect(fetchSpy).toHaveBeenCalledWith(
@@ -190,9 +190,9 @@ describe('Task Service', () => {
         it('should handle a large number of tasks efficiently', async () => {
             const tasks = createRandomTaskList(10**5, 10**6);
             fetchSpy.mockResolvedValueOnce({ ok: true, json: async () => tasks });
-    
-            const result = await getTasks();
-    
+
+            const result = await taskService.getTasks();
+
             expect(result).toEqual(tasks);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -200,13 +200,13 @@ describe('Task Service', () => {
             );
         });
     });
-    
+
     describe("Read single task", () => {
         const payload = { method: 'GET', headers: { 'Content-Type': 'application/json' } };
 
         it('should fail if the task id is negative', async () => {
             const taskId = -1
-            await expect(getTaskById(taskId)).rejects.toThrow('Invalid task ID');
+            await expect(taskService.getTaskById(taskId)).rejects.toThrow('Invalid task ID');
             expect(errorSpy).toHaveBeenCalledTimes(1);
         });
         it('should fail if the task does not exist', async () => {
@@ -216,7 +216,7 @@ describe('Task Service', () => {
                 json: async () => ({ error: 'Task not found' })
             });
 
-            await expect(getTaskById(taskId)).rejects.toThrow('Failed to fetch task');
+            await expect(taskService.getTaskById(taskId)).rejects.toThrow('Failed to fetch task');
             expect(errorSpy).toHaveBeenCalledTimes(1);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -227,7 +227,7 @@ describe('Task Service', () => {
             const task = createRandomTask();
             fetchSpy.mockResolvedValueOnce({ ok: true, json: async () => task });
 
-            const result = await getTaskById(1);
+            const result = await taskService.getTaskById(1);
 
             expect(result).toEqual(task);
             expect(fetchSpy).toHaveBeenCalledWith(
@@ -240,7 +240,7 @@ describe('Task Service', () => {
             task.description = 'Description with special characters: !@#$%^&*() and Unicode: 漢字';
             fetchSpy.mockResolvedValueOnce({ ok: true, json: async () => task });
 
-            const result = await getTaskById(1);
+            const result = await taskService.getTaskById(1);
 
             expect(result).toEqual(task);
             expect(fetchSpy).toHaveBeenCalledWith(
@@ -253,7 +253,7 @@ describe('Task Service', () => {
             task.dueDate = (boundary == 'past') ? faker.date.past() : faker.date.future();
             fetchSpy.mockResolvedValueOnce({ ok: true, json: async () => task });
 
-            const result = await getTaskById(1);
+            const result = await taskService.getTaskById(1);
 
             expect(result).toEqual(task);
             expect(fetchSpy).toHaveBeenCalledWith(
@@ -262,7 +262,7 @@ describe('Task Service', () => {
             );
         });
     });
-    
+
     describe("Update", () => {
         it('should fail if the task does not exist', async () => {
             const task = createRandomTask();
@@ -275,7 +275,7 @@ describe('Task Service', () => {
                 json: async () => ({ error: 'Task not found' })
             });
 
-            await expect(updateTask(999, task)).rejects.toThrow('Failed to update task');
+            await expect(taskService.updateTask(999, task)).rejects.toThrow('Failed to update task');
             expect(errorSpy).toHaveBeenCalledTimes(1);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -289,9 +289,9 @@ describe('Task Service', () => {
                 headers: { 'Content-Type': 'application/json' }
             };
             fetchSpy.mockResolvedValueOnce({ ok: true, json: async () => ({ ...task, updated: true }) });
-            
-            const result = await updateTask(1, task);
-            
+
+            const result = await taskService.updateTask(1, task);
+
             expect(result).toEqual({ ...task, updated: true });
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -306,11 +306,11 @@ describe('Task Service', () => {
                 const updatedTask = updatedTasks.find(task => task.id === taskId);
                 return Promise.resolve({ ok: true, json: async () => ({ ...updatedTask, updated: true }) });
             });
-            
+
             const results = await Promise.all(
-                tasks.map(task => updateTask(task.id, task))
+                tasks.map(task => taskService.updateTask(task.id, task))
             );
-            
+
             expect(results).toEqual([
                 { ...updatedTasks[0], updated: true },
                 { ...updatedTasks[1], updated: true }
@@ -327,10 +327,10 @@ describe('Task Service', () => {
             });
         });
     });
-    
+
     describe("Delete", () => {
         const payload = { method: 'DELETE', headers: { 'Content-Type': 'application/json' }};
-        
+
         it('should fail if the task does not exist', async () => {
             const taskId = 999;
             fetchSpy.mockResolvedValueOnce({
@@ -338,7 +338,7 @@ describe('Task Service', () => {
                 json: async () => ({ error: 'Task not found' })
             });
 
-            await expect(deleteTask(taskId)).rejects.toThrow('Failed to delete task');
+            await expect(taskService.deleteTask(taskId)).rejects.toThrow('Failed to delete task');
             expect(errorSpy).toHaveBeenCalledTimes(1);
             expect(fetchSpy).toHaveBeenCalledWith(
                 expect.any(String),
@@ -350,7 +350,7 @@ describe('Task Service', () => {
             const message = { message: 'Task deleted successfully' };
             fetchSpy.mockResolvedValueOnce({ ok: true, json: async () => message });
 
-            const result = await deleteTask(taskId);
+            const result = await taskService.deleteTask(taskId);
 
             expect(result).toEqual(message);
             expect(fetchSpy).toHaveBeenCalledWith(

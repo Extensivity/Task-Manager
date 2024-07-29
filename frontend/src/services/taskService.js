@@ -71,3 +71,13 @@ export const deleteTask = async (id) => {
         throw error;
     }
 };
+
+const taskService = {
+    getTasks,
+    getTaskById,
+    createTask,
+    updateTask,
+    deleteTask
+};
+
+export default taskService;
