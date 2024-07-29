@@ -62,7 +62,7 @@ export default function UserAuth() {
                             </span>
                         ) : (
                             <span>
-                                Don't have an account?
+                                Don&apos;t have an account?
                                 <a onClick={() => setIsRegistering(true)}>Register</a>
                             </span>
                         )}

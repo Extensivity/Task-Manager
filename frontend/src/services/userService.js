@@ -39,7 +39,7 @@ export const fetchUser = async (token) => {
     return await response.json()
 }
 
-export default {
+export default userService = {
     login,
     logout,
     register,
