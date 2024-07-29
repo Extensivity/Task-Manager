@@ -1,3 +1,3 @@
-describe('Login Page', () => {
+describe.skip('Login Page', () => {
     it.todo('exists');
 });
