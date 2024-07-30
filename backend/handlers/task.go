@@ -2,11 +2,19 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"taskmanager/models"
 	"taskmanager/store"
 )
+
+func validateTask(task models.Task) error {
+	if task.Priority < 0 || task.Priority > 2 {
+		return fmt.Errorf("priority must be 0, 1, or 2")
+	}
+	return nil
+}
 
 func HandleTasks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -16,6 +24,10 @@ func HandleTasks(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		var task models.Task
 		if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if err := validateTask(task); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -39,6 +51,10 @@ func HandleTask(w http.ResponseWriter, r *http.Request) {
 	case "PUT":
 		var task models.Task
 		if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if err := validateTask(task); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
