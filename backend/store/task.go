@@ -6,13 +6,13 @@ import (
 )
 
 var (
-	tasks = make(map[string]models.Task)
-	mu    sync.Mutex
+	tasks  = make(map[string]models.Task)
+	taskMu sync.Mutex
 )
 
 func GetTasks() []models.Task {
-	mu.Lock()
-	defer mu.Unlock()
+	taskMu.Lock()
+	defer taskMu.Unlock()
 
 	result := make([]models.Task, 0, len(tasks))
 	for _, task := range tasks {
@@ -22,23 +22,23 @@ func GetTasks() []models.Task {
 }
 
 func GetTask(id string) (models.Task, bool) {
-	mu.Lock()
-	defer mu.Unlock()
+	taskMu.Lock()
+	defer taskMu.Unlock()
 
 	task, exists := tasks[id]
 	return task, exists
 }
 
 func AddTask(task models.Task) {
-	mu.Lock()
-	defer mu.Unlock()
+	taskMu.Lock()
+	defer taskMu.Unlock()
 
 	tasks[task.ID] = task
 }
 
 func UpdateTask(id string, task models.Task) {
-	mu.Lock()
-	defer mu.Unlock()
+	taskMu.Lock()
+	defer taskMu.Unlock()
 
 	if _, exists := tasks[id]; exists {
 		tasks[id] = task
@@ -46,8 +46,8 @@ func UpdateTask(id string, task models.Task) {
 }
 
 func DeleteTask(id string) {
-	mu.Lock()
-	defer mu.Unlock()
+	taskMu.Lock()
+	defer taskMu.Unlock()
 
 	delete(tasks, id)
 }
